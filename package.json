@@ -1,0 +1,26 @@
+{
+  "name": "labecommerce-backend",
+  "version": "1.0.0",
+  "description": "Projeto para criação de uma API para um e-commerce.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node ./index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnaliceMarques/labecommerce-backend.git"
+  },
+  "keywords": [
+    "API",
+    "e-commerce",
+    "backend"
+  ],
+  "author": "Analice Marques",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AnaliceMarques/labecommerce-backend/issues"
+  },
+  "homepage": "https://github.com/AnaliceMarques/labecommerce-backend#readme"
+}
