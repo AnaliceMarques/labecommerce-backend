@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { products, purchases } from "../database";
-import { TPurchase } from "../types";
+import { products, purchases, users } from "../database";
+import { TProduct, TPurchase, TUser } from "../types";
 
 export const postNewPurchase = (req: Request, res: Response) => {
   const { userId, productId, quantity } = req.body;
@@ -15,16 +15,27 @@ export const postNewPurchase = (req: Request, res: Response) => {
     return res.status(400).send("quantity tem que ser number");
   }
 
-  const product = products.find((product) => product.id === productId);
+  const userFound: TUser | undefined = users.find((user) => user.id === userId);
+  if (!userFound) {
+    return res.status(400).send("Usuário não cadastrado");
+  }
+  const productFound: TProduct | undefined = products.find(
+    (product) => product.id === productId
+  );
+  if (!productFound) {
+    return res.status(400).send("Produto não cadastrado");
+  }
 
   const newPurchase: TPurchase = {
     userId,
     productId,
     quantity,
-    totalPrice: quantity * product.price,
+    totalPrice: quantity * productFound.price,
   };
 
   purchases.push(newPurchase);
 
-  res.status(201).send("Compra realizada com sucesso");
+  res
+    .status(201)
+    .send({ mensage: "Compra realizada com sucesso", newPurchase });
 };

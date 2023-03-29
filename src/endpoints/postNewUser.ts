@@ -2,13 +2,7 @@ import { Request, Response } from "express";
 import { users } from "../database";
 import { TUser } from "../types";
 
-//POST Create User
 export const postNewUser = (req: Request, res: Response) => {
-  // const id = req.body.id;
-  // const email = req.body.email;
-  // const password = req.body.password;
-
-  //usando a desestruturação
   const { id, email, password } = req.body;
 
   if (typeof id !== "string") {
@@ -21,6 +15,15 @@ export const postNewUser = (req: Request, res: Response) => {
     return res.status(400).send("password tem que ser string");
   }
 
+  const userIdFound: TUser = users.find((user) => user.id === id);
+  if (userIdFound) {
+    return res.status(400).send("id de usuário já cadastrado");
+  }
+  const userEmailFound: TUser = users.find((user) => user.email === email);
+  if (userEmailFound) {
+    return res.status(400).send("email de usuário já existe cadastrado");
+  }
+
   const newUser: TUser = {
     id,
     email,
@@ -29,5 +32,5 @@ export const postNewUser = (req: Request, res: Response) => {
 
   users.push(newUser);
 
-  res.status(201).send("Usuário cadastrado com sucesso");
+  res.status(201).send({ mensage: "Usuário cadastrado com sucesso", newUser });
 };
