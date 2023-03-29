@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import { products } from "../database";
 import { TProduct } from "../types";
 
-//POST create Product
 export const postNewProduct = (req: Request, res: Response) => {
   const { id, name, price, category } = req.body;
 
@@ -16,6 +15,15 @@ export const postNewProduct = (req: Request, res: Response) => {
     return res.status(400).send("password tem que ser string");
   }
 
+  const productIdFound = products.find((product) => product.id === id);
+  if (productIdFound) {
+    return res.status(400).send("id de produto já cadastrado");
+  }
+  const productNameFound = products.find((product) => product.name === name);
+  if (productNameFound) {
+    return res.status(400).send("nome de produto já cadastrado");
+  }
+
   const newProduct: TProduct = {
     id,
     name,
@@ -25,5 +33,7 @@ export const postNewProduct = (req: Request, res: Response) => {
 
   products.push(newProduct);
 
-  res.status(200).send("Produto cadastrado com sucesso");
+  res
+    .status(200)
+    .send({ mensage: "Produto cadastrado com sucesso", newProduct });
 };

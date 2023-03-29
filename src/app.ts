@@ -7,6 +7,12 @@ import { getSearchProductByName } from "./endpoints/getSearchProductByName";
 import { postNewUser } from "./endpoints/postNewUser";
 import { postNewPurchase } from "./endpoints/postNewPurchase";
 import { postNewProduct } from "./endpoints/postNewProduct";
+import { getProductsById } from "./endpoints/getProductsById";
+import { getUserPurchasesByUserId } from "./endpoints/getUserPurchasesByUserId";
+import { deleteUserById } from "./endpoints/deleteUserById";
+import { deleteProductById } from "./endpoints/deleteProductById";
+import { putEditUserById } from "./endpoints/putEditUserById";
+import { putEditProductById } from "./endpoints/putEditProductById";
 
 const app = express();
 app.use(express.json());
@@ -19,14 +25,20 @@ app.listen(3003, () => {
 
 app.get("/ping", getPing); //teste
 
-app.get("/users", getAllUsers);
+//Users
+app.get("/users", getAllUsers); //ok
+app.post("/users", postNewUser); //ok
+app.delete("/users/:id", deleteUserById); //ok
+app.put("/users/:id", putEditUserById); //ok
 
-app.get("/products", getAllProducts);
+//Products
+app.get("/products", getAllProducts); //ok
+app.get("/product/search", getSearchProductByName); //ok
+app.get("/products/:id", getProductsById); //ok
+app.post("/products", postNewProduct); //falta a verificação do tipo enum
+app.delete("/products/:id", deleteProductById); //ok
+app.put("/products/:id", putEditProductById); //falta a verificação do enum
 
-app.get("/product/search", getSearchProductByName);
-
-app.post("/users", postNewUser);
-
-app.post("/products", postNewProduct);
-
-app.post("/purchases", postNewPurchase);
+//Purchases
+app.post("/purchases", postNewPurchase); //ok
+app.get("/users/:id/purchases", getUserPurchasesByUserId); //ok
