@@ -1,18 +1,17 @@
 import express from "express";
 import cors from "cors";
-import { getPing } from "./endpoints/getPing";
 import { getAllUsers } from "./endpoints/getAllUsers";
 import { getAllProducts } from "./endpoints/getAllProducts";
-import { getSearchProductByName } from "./endpoints/getSearchProductByName";
-import { postNewUser } from "./endpoints/postNewUser";
-import { postNewPurchase } from "./endpoints/postNewPurchase";
-import { postNewProduct } from "./endpoints/postNewProduct";
-import { getProductsById } from "./endpoints/getProductsById";
+import { searchProductsByName } from "./endpoints/searchProductByName";
+import { createUser } from "./endpoints/createUser";
+import { createPurchase } from "./endpoints/createPurchase";
+import { createProduct } from "./endpoints/createProduct";
+import { getProductById } from "./endpoints/getProductById";
 import { getUserPurchasesByUserId } from "./endpoints/getUserPurchasesByUserId";
 import { deleteUserById } from "./endpoints/deleteUserById";
 import { deleteProductById } from "./endpoints/deleteProductById";
-import { putEditUserById } from "./endpoints/putEditUserById";
-import { putEditProductById } from "./endpoints/putEditProductById";
+import { editUserById } from "./endpoints/editUserById";
+import { editProductById } from "./endpoints/editProductById";
 
 const app = express();
 app.use(express.json());
@@ -23,22 +22,20 @@ app.listen(3003, () => {
   console.log("Servidor rodando na porta 3003");
 });
 
-app.get("/ping", getPing); //teste
+//Endpoints Users
+app.get("/users", getAllUsers);
+app.post("/users", createUser);
+app.delete("/users/:id", deleteUserById);
+app.put("/users/:id", editUserById);
 
-//Users
-app.get("/users", getAllUsers); //ok
-app.post("/users", postNewUser); //ok
-app.delete("/users/:id", deleteUserById); //ok
-app.put("/users/:id", putEditUserById); //ok
+//Endpoints Products
+app.get("/products", getAllProducts);
+app.get("/products/search", searchProductsByName);
+app.get("/products/:id", getProductById);
+app.post("/products", createProduct);
+app.delete("/products/:id", deleteProductById);
+app.put("/products/:id", editProductById);
 
-//Products
-app.get("/products", getAllProducts); //ok
-app.get("/product/search", getSearchProductByName); //ok
-app.get("/products/:id", getProductsById); //ok
-app.post("/products", postNewProduct); //falta a verificação do tipo enum
-app.delete("/products/:id", deleteProductById); //ok
-app.put("/products/:id", putEditProductById); //falta a verificação do enum
-
-//Purchases
-app.post("/purchases", postNewPurchase); //ok
-app.get("/users/:id/purchases", getUserPurchasesByUserId); //ok
+//Endpoints Purchases
+app.post("/purchases", createPurchase);
+app.get("/users/:id/purchases", getUserPurchasesByUserId);
