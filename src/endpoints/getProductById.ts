@@ -1,22 +1,21 @@
 import { Request, Response } from "express";
 import { products } from "../database";
+import { TProduct } from "../types";
 
-export const deleteProductById = (req: Request, res: Response) => {
+export const getProductById = (req: Request, res: Response) => {
   try {
     const id = req.params.id;
 
-    const indexProductToDelete = products.findIndex(
+    const productFound: TProduct | undefined = products.find(
       (product) => product.id === id
     );
 
-    if (indexProductToDelete < 0) {
+    if (!productFound) {
       res.status(404);
-      throw new Error("Produto não cadastrado");
+      throw new Error("Produto não encontrado");
     }
 
-    products.splice(indexProductToDelete, 1);
-
-    res.status(200).send("Produto apagado com sucesso");
+    res.status(200).send({ mensage: "Produto encontrado", productFound });
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);

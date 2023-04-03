@@ -3,17 +3,17 @@ import { TUser, TProduct, TPurchase, PRODUCT_CATEGORY } from "./types";
 //Dados mockados
 export const users: TUser[] = [
   {
-    id: "01",
+    id: "u001",
     email: "usuario1@gmail.com",
     password: "123456",
   },
   {
-    id: "02",
+    id: "u002",
     email: "usuario2@gmail.com",
     password: "abc123",
   },
   {
-    id: "03",
+    id: "u003",
     email: "usuario3@gmail.com",
     password: "abcdef",
   },
@@ -21,25 +21,25 @@ export const users: TUser[] = [
 
 export const products: TProduct[] = [
   {
-    id: "01",
+    id: "p001",
     name: "produto1",
     price: 10,
     category: PRODUCT_CATEGORY.CATEGORY1,
   },
   {
-    id: "02",
+    id: "p002",
     name: "produto2",
     price: 20,
     category: PRODUCT_CATEGORY.CATEGORY2,
   },
   {
-    id: "03",
+    id: "p003",
     name: "produto3",
     price: 30,
     category: PRODUCT_CATEGORY.CATEGORY3,
   },
   {
-    id: "04",
+    id: "p004",
     name: "produto4",
     price: 40,
     category: PRODUCT_CATEGORY.CATEGORY3,
@@ -56,13 +56,13 @@ export const purchases: TPurchase[] = [
   {
     userId: users[1].id,
     productId: products[1].id,
-    quantity: 2,
+    quantity: 3,
     totalPrice: products[1].price * 2,
   },
   {
     userId: users[2].id,
     productId: products[2].id,
-    quantity: 2,
+    quantity: 4,
     totalPrice: products[2].price * 2,
   },
   {
