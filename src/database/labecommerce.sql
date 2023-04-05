@@ -92,3 +92,46 @@ LIMIT 20;
 SELECT * FROM products
 WHERE price >= 9 AND price <= 49
 ORDER BY price ASC;
+
+
+CREATE TABLE purchases (
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    total_price REAL NOT NULL,
+    paid INTEGER NOT NULL DEFAULT 0, --lógica booleana onde 0 é false e 1 é true para pagamento
+    delivered_at TEXT DEFAULT NULL, --data de entrega do pedido (DATETIME)
+    buyer_id TEXT NOT NULL,
+    FOREIGN KEY (buyer_id) REFERENCES users(id)
+);
+
+DROP TABLE purchases;
+
+SELECT * FROM purchases;
+
+INSERT INTO purchases (id, total_price, buyer_id)
+    VALUES
+        ("pu001", 9.99, "u002"),
+        ("pu002", 19.99, "u002"),
+        ("pu003", 9.99, "u003"),
+        ("pu004", 49.99, "u003"),
+        ("pu005", 19.99, "u004"),
+        ("pu006", 49.99, "u004"),
+        ("pu007", 9.99, "u005"),
+        ("pu008", 59.99, "u005");
+
+UPDATE purchases
+SET delivered_at = DATETIME("now", "localtime")
+WHERE id="pu001";
+
+
+SELECT * FROM purchases
+INNER JOIN users
+ON buyer_id = users.id
+WHERE users.id = "u002";
+
+-- (CASE WHEN purchases.paid = 0 THEN 'not paid' ELSE 'paid' END) as paid
+
+
+
+
+
+
