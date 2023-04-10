@@ -6,15 +6,11 @@ CREATE TABLE users (
     password TEXT NOT NULL
 );
 
-SELECT * FROM users;
-
-
 INSERT INTO users
     VALUES
     ("u001", "usuario1@email.com", "123456"),
     ("u002", "usuario2@email.com", "abcdef"),
     ("u003", "usuario3@email.com", "abc123");
-
 
 CREATE TABLE products (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
@@ -22,8 +18,6 @@ CREATE TABLE products (
     price REAL NOT NULL,
     categoty TEXT NOT NULL
 );
-
-SELECT * FROM products;
 
 INSERT INTO products
     VALUES
@@ -129,6 +123,53 @@ ON buyer_id = users.id
 WHERE users.id = "u002";
 
 -- (CASE WHEN purchases.paid = 0 THEN 'not paid' ELSE 'paid' END) as paid
+
+CREATE TABLE purchases_products (
+    purchase_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL
+);
+
+INSERT INTO purchases_products
+VALUES
+    ("pu001", "p001", 2),
+    ("pu004", "p005", 1),
+    ("pu007", "p001", 5);
+
+SELECT * FROM purchases_products;
+
+SELECT * FROM products
+LEFT JOIN purchases_products
+ON products.id = purchases_products.product_id
+LEFT JOIN purchases
+ON purchases.id = purchases_products.purchase_id;
+
+--Compras realizadas por um usuário
+SELECT 
+    users.id AS userId,
+    users.email,
+    purchases.id AS purchasesId,
+    purchases.paid,
+    purchases.delivered_at,
+    purchases_products.product_id AS productId,
+    products.name AS productName,
+    products.price,
+    purchases_products.quantity,
+    purchases.total_price AS totalPrice
+FROM users
+LEFT JOIN purchases
+ON users.id = purchases.buyer_id
+LEFT JOIN purchases_products
+ON purchases_products.purchase_id = purchases.id
+LEFT JOIN products
+ON products.id = purchases_products.product_id
+WHERE users.id = "u002";
+
+-- ----------------------------------------------------
+
+SELECT * FROM products
+RIGHT JOIN purchases_products
+ON products.id = purchases_products.product_id;
 
 
 
