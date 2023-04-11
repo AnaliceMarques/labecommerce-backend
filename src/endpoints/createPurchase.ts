@@ -1,51 +1,61 @@
 import { Request, Response } from "express";
-import { products, purchases, users } from "../database";
-import { TProduct, TPurchase, TUser } from "../types";
+import { db } from "../database/knex";
+import { TPurchase } from "../types";
 
-export const createPurchase = (req: Request, res: Response) => {
+export const createPurchase = async (req: Request, res: Response) => {
   try {
-    const { userId, productId, quantity } = req.body;
+    const { id, buyer, total_price } = req.body;
 
-    if (typeof userId !== "string") {
+    if (!id.length) {
+      res.status(400);
+      throw new Error("'id' não deve estar vazio");
+    }
+
+    if (!buyer.length) {
+      res.status(400);
+      throw new Error("'id' não deve estar vazio");
+    }
+
+    if (total_price < 0) {
+      res.status(400);
+      throw new Error("'totalPrice' não pode ser negativo");
+    }
+
+    if (typeof id !== "string") {
       res.status(400);
       throw new Error("'id' tem que ser string");
     }
-    if (typeof productId !== "string") {
+    if (typeof buyer !== "string") {
       res.status(400);
-      throw new Error("'id' tem que ser string");
+      throw new Error("'buyer' tem que ser string");
     }
-    if (typeof quantity !== "number") {
+    if (typeof total_price !== "number") {
       res.status(400);
-      throw new Error("'quantity' tem que ser number");
+      throw new Error("'totalPrice' tem que ser number");
     }
 
-    const userFound: TUser | undefined = users.find(
-      (user) => user.id === userId
-    );
+    const [buyerFound] = await db.raw(`
+    SELECT * FROM users
+    WHERE id = "${buyer}";
+    `);
 
-    if (!userFound) {
+    if (!buyerFound) {
       res.status(400);
       throw new Error("Usuário não cadastrado");
     }
-    const productFound: TProduct | undefined = products.find(
-      (product) => product.id === productId
-    );
-
-    if (!productFound) {
-      res.status(400);
-      throw new Error("Produto não cadastrado");
-    }
 
     const newPurchase: TPurchase = {
-      userId,
-      productId,
-      quantity,
-      totalPrice: quantity * productFound.price,
+      id,
+      buyer,
+      total_price,
     };
 
-    purchases.push(newPurchase);
+    await db.raw(`
+    INSERT INTO purchases (id, buyer, total_price)
+    VALUES ("${newPurchase.id}", "${newPurchase.buyer}",${newPurchase.total_price} )
+    `);
 
-    res.status(201).send("Compra realizada com sucesso");
+    res.status(201).send("Compra cadastrada com sucesso");
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);

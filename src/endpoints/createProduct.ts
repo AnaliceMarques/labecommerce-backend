@@ -1,10 +1,25 @@
 import { Request, Response } from "express";
-import { products } from "../database";
-import { PRODUCT_CATEGORY, TProduct } from "../types";
+import { db } from "../database/knex";
+import { TProduct } from "../types";
 
-export const createProduct = (req: Request, res: Response) => {
+export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { id, name, price, category } = req.body;
+    const { id, name, price, description, image_url } = req.body;
+
+    if (!id.length) {
+      res.status(400);
+      throw new Error("'id' não deve estar vazio");
+    }
+
+    if (!name.length) {
+      res.status(400);
+      throw new Error("'name' não deve estar vazio");
+    }
+
+    if (price < 0) {
+      res.status(400);
+      throw new Error("'price' não deve ser negativo");
+    }
 
     if (typeof id !== "string") {
       res.status(400);
@@ -18,22 +33,26 @@ export const createProduct = (req: Request, res: Response) => {
 
     if (typeof price !== "number") {
       res.status(400);
-      throw new Error("'password' tem que ser string");
+      throw new Error("'price' tem que ser number");
     }
 
-    if (
-      category !== PRODUCT_CATEGORY.CATEGORY1 &&
-      category !== PRODUCT_CATEGORY.CATEGORY2 &&
-      category !== PRODUCT_CATEGORY.CATEGORY3
-    ) {
+    if (typeof description !== "string") {
       res.status(400);
-      throw new Error("'category' precisa ter um dos valores válidos");
+      throw new Error("'description' tem que ser string");
     }
 
-    const productIdFound = products.find((product) => product.id === id);
+    if (typeof image_url !== "string") {
+      res.status(400);
+      throw new Error("'image_url' tem que ser string");
+    }
+
+    const [productIdFound] = await db.raw(`
+    SELECT * FROM products
+    WHERE id = "${id}";
+    `);
 
     if (productIdFound) {
-      res.status(400);
+      res.status(409);
       throw new Error("'id' já cadastrado");
     }
 
@@ -41,10 +60,15 @@ export const createProduct = (req: Request, res: Response) => {
       id,
       name,
       price,
-      category,
+      description,
+      image_url,
     };
 
-    products.push(newProduct);
+    await db.raw(`
+   INSERT INTO products (id, name, price, description, image_url)
+    VALUES
+    ("${newProduct.id}","${newProduct.name}", ${newProduct.price}, "${newProduct.description}", "${newProduct.image_url}");
+   `);
 
     res.status(201).send("Produto cadastrado com sucesso");
   } catch (error) {
