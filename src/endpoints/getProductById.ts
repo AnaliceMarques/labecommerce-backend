@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { products } from "../database";
-import { TProduct } from "../types";
+import { db } from "../database/knex";
 
-export const getProductById = (req: Request, res: Response) => {
+export const getProductById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
 
-    const productFound: TProduct | undefined = products.find(
-      (product) => product.id === id
-    );
+    const [productFound] = await db.raw(`
+    SELECT * FROM products
+    WHERE id="${id}";
+    `);
 
     if (!productFound) {
       res.status(404);

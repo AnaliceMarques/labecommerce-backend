@@ -1,21 +1,24 @@
 import { Request, Response } from "express";
-import { purchases, users } from "../database";
-import { TPurchase, TUser } from "../types";
+import { db } from "../database/knex";
 
-export const getUserPurchasesByUserId = (req: Request, res: Response) => {
+export const getUserPurchasesByUserId = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
 
-    const userFound: TUser | undefined = users.find((user) => user.id === id);
+    const [userFound] = await db.raw(`
+    SELECT * FROM users
+    WHERE id = "${id}";
+    `);
 
     if (!userFound) {
       res.status(404);
       throw new Error("Usuário não cadastrado");
     }
 
-    const purchasesFound: TPurchase[] = purchases.filter(
-      (purchase) => purchase.userId === id
-    );
+    const purchasesFound = await db.raw(`
+      SELECT * FROM purchases
+      WHERE buyer = "${id}"
+    `);
 
     if (purchasesFound.length === 0) {
       res.status(404);

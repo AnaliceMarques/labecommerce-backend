@@ -1,9 +1,16 @@
 import { Request, Response } from "express";
-import { products } from "../database";
+import { db } from "../database/knex";
 
-export const getAllProducts = (req: Request, res: Response) => {
+export const getAllProducts = async (req: Request, res: Response) => {
   try {
-    res.status(200).send({ mensage: "Produtos cadastrados", products });
+    const result = await db.raw(`SELECT * FROM products;`);
+
+    if (result.length === 0) {
+      res.status(404);
+      throw new Error("Nenhum produto cadastrado");
+    }
+
+    res.status(200).send({ mensage: "Produtos cadastrados", result });
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);
