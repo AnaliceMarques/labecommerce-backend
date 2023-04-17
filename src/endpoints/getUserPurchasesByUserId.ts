@@ -5,30 +5,29 @@ export const getUserPurchasesByUserId = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
 
-    const [userFound] = await db.raw(`
-    SELECT * FROM users
-    WHERE id = "${id}";
-    `);
+    const [userExist] = await db("users").where({ id: id });
 
-    if (!userFound) {
+    if (!userExist) {
       res.status(404);
-      throw new Error("Usuário não cadastrado");
+      throw new Error("'id' não cadastrado");
     }
 
-    const purchasesFound = await db.raw(`
-      SELECT * FROM purchases
-      WHERE buyer = "${id}"
-    `);
+    const userPurchases = await db
+      .select(
+        "id as purchaseId",
+        "total_price as totalPrice",
+        "created_at as createdAt",
+        "paid"
+      )
+      .from("purchases")
+      .where({ buyer: id });
 
-    if (purchasesFound.length === 0) {
+    if (userPurchases.length === 0) {
       res.status(404);
       throw new Error("O usuário não realizou nenhuma compra");
     }
 
-    res.status(200).send({
-      mensage: "Compras realizadas pelo usuário",
-      purchasesFound,
-    });
+    res.status(200).send(userPurchases);
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);

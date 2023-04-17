@@ -11,9 +11,26 @@ export const createUser = async (req: Request, res: Response) => {
       throw new Error("'id' não deve estar vazio");
     }
 
+    if (typeof id !== "string") {
+      res.status(400);
+      throw new Error("'id' deve ser string");
+    }
+
+    const [userIdExist] = await db("users").where({ id: id });
+
+    if (userIdExist) {
+      res.status(409);
+      throw new Error("'id' já cadastrado, digite outro valor");
+    }
+
     if (!name.length) {
       res.status(400);
       throw new Error("'name' não deve estar vazio");
+    }
+
+    if (typeof name !== "string") {
+      res.status(400);
+      throw new Error("'name' deve ser string");
     }
 
     if (!email.length) {
@@ -21,49 +38,26 @@ export const createUser = async (req: Request, res: Response) => {
       throw new Error("'email' não deve estar vazio");
     }
 
+    if (typeof email !== "string") {
+      res.status(400);
+      throw new Error("'email' deve ser string");
+    }
+
+    const [userEmailExist] = await db("users").where({ email: email });
+
+    if (userEmailExist) {
+      res.status(409);
+      throw new Error("'email' já cadastrado, digite outro valor");
+    }
+
     if (!password.length) {
       res.status(400);
       throw new Error("'password' não deve estar vazio");
     }
 
-    if (typeof id !== "string") {
-      res.status(400);
-      throw new Error("'id' tem que ser string");
-    }
-
-    if (typeof name !== "string") {
-      res.status(400);
-      throw new Error("'name' tem que ser string");
-    }
-
-    if (typeof email !== "string") {
-      res.status(400);
-      throw new Error("'email' tem que ser string");
-    }
-
     if (typeof password !== "string") {
       res.status(400);
-      throw new Error("'password' tem que ser string");
-    }
-
-    const [userIdFound] = await db.raw(`
-    SELECT * FROM users
-    WHERE id = "${id}";
-  `);
-
-    if (userIdFound) {
-      res.status(409);
-      throw new Error("'id' já cadastrado, digite outro valor");
-    }
-
-    const [userEmailFound] = await db.raw(`
-    SELECT * FROM users
-    WHERE email LIKE "%${email}%"
-    `);
-
-    if (userEmailFound) {
-      res.status(409);
-      throw new Error("'email' já cadastrado, digite outro valor");
+      throw new Error("'password' deve ser string");
     }
 
     const newUser: TUser = {
@@ -73,13 +67,9 @@ export const createUser = async (req: Request, res: Response) => {
       password,
     };
 
-    await db.raw(`
-    INSERT INTO users (id, name, email, password)
-    VALUES
-    ("${newUser.id}","${newUser.name}", "${newUser.email}", "${newUser.password}");
-    `);
+    await db("users").insert(newUser);
 
-    res.status(201).send("Usuário cadastrado com sucesso");
+    res.status(201).send({ message: "Usuário cadastrado com sucesso" });
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);

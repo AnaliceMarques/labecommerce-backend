@@ -1,15 +1,21 @@
 import { Request, Response } from "express";
 import { db } from "../database/knex";
 
-export const getAllUsers = async (req: Request, res: Response) => {
+export const getAllPurchases = async (req: Request, res: Response) => {
   try {
     const result = await db
-      .select("id", "name", "email", "created_at as createdAt")
-      .from("users");
+      .select(
+        "id",
+        "buyer as buyerId",
+        "total_price as totalPrice",
+        "created_at as createdAt",
+        "paid"
+      )
+      .from("purchases");
 
     if (result.length === 0) {
       res.status(404);
-      throw new Error("Nenhum usuário cadastrado");
+      throw new Error("Nenhum pedido cadastrado");
     }
 
     res.status(200).send(result);

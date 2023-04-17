@@ -18,3 +18,9 @@ export type TPurchase = {
   buyer: string;
   total_price: number;
 };
+
+export type TPurchaseProduct = {
+  purchase_id: string;
+  product_id: string;
+  quantity: number;
+};

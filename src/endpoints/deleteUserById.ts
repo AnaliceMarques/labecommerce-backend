@@ -1,29 +1,40 @@
-// import { Request, Response } from "express";
-// import { users } from "../database";
+import { Request, Response } from "express";
+import { db } from "../database/knex";
 
-// export const deleteUserById = (req: Request, res: Response) => {
-//   try {
-//     const id = req.params.id;
+export const deleteUserById = async (req: Request, res: Response) => {
+  try {
+    const idToDelete = req.params.id;
 
-//     const indexUserToDelete = users.findIndex((user) => user.id === id);
+    const [userIdExist] = await db("users").where({ id: idToDelete });
 
-//     if (indexUserToDelete < 0) {
-//       res.status(404);
-//       throw new Error("Usuário não cadastrado");
-//     }
+    if (!userIdExist) {
+      res.status(404);
+      throw new Error("'id' não cadastrado");
+    }
 
-//     users.splice(indexUserToDelete, 1);
+    const [userInPurchases] = await db("purchases").where({
+      buyer: idToDelete,
+    });
 
-//     res.status(200).send("Usuário apagado com sucesso");
-//   } catch (error) {
-//     if (res.statusCode === 200) {
-//       res.status(500);
-//     }
+    if (userInPurchases) {
+      await db("purchases_products")
+        .del()
+        .where({ purchase_id: userInPurchases.id });
+      await db("purchases").del().where({ buyer: idToDelete });
+    }
 
-//     if (error instanceof Error) {
-//       res.send(error.message);
-//     } else {
-//       res.send("Erro inesperado");
-//     }
-//   }
-// };
+    await db("users").del().where({ id: idToDelete });
+
+    res.status(200).send({ message: "Usuário excluído com sucesso" });
+  } catch (error) {
+    if (res.statusCode === 200) {
+      res.status(500);
+    }
+
+    if (error instanceof Error) {
+      res.send(error.message);
+    } else {
+      res.send("Erro inesperado");
+    }
+  }
+};

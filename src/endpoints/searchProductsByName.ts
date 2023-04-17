@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { db } from "../database/knex";
 
-export const searchProductByName = async (req: Request, res: Response) => {
+export const searchProductsByName = async (req: Request, res: Response) => {
   try {
     const q = req.query.q as string;
 
@@ -12,17 +12,22 @@ export const searchProductByName = async (req: Request, res: Response) => {
       );
     }
 
-    const result = await db.raw(`
-    SELECT * FROM products
-    WHERE name LIKE "%${q}%";
-    `);
+    const list = await db
+      .select("id", "name", "price", "description", "image_url as imageUrl")
+      .from("products")
+      .where("name", "LIKE", `%${q}%`);
 
-    if (result.length === 0) {
+    if (list.length === 0) {
       res.status(404);
       throw new Error("Não foi encontrado produto com esse nome");
     }
 
-    res.status(200).send({ mensage: "Produto(s) encontrado(s)", result });
+    const result = {
+      quantity: list.length,
+      list,
+    };
+
+    res.status(200).send(result);
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);
