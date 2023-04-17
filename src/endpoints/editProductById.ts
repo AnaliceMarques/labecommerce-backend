@@ -1,58 +1,70 @@
-// import { Request, Response } from "express";
-// import { products } from "../database";
-// import { PRODUCT_CATEGORY, TProduct } from "../types";
+import { Request, Response } from "express";
+import { db } from "../database/knex";
+import { TProduct } from "../types";
 
-// export const editProductById = (req: Request, res: Response) => {
-//   try {
-//     const id = req.params.id;
+export const editProductById = async (req: Request, res: Response) => {
+  try {
+    const idToEdit = req.params.id;
 
-//     const productToEdid: TProduct = products.find(
-//       (product) => product.id === id
-//     );
+    const [productToEdid] = await db("products").where({ id: idToEdit });
 
-//     if (!productToEdid) {
-//       res.status(404);
-//       throw new Error("Produto não cadastrado");
-//     }
+    if (!productToEdid) {
+      res.status(404);
+      throw new Error("'id' não cadastrado");
+    }
 
-//     const newName = req.body.name as string | undefined;
-//     const newPrice = req.body.price as number | undefined;
-//     const newCategory = req.body.category as PRODUCT_CATEGORY | undefined;
+    const newName = req.body.name as string | undefined;
+    const newPrice = req.body.price as number | undefined;
+    const newDescription = req.body.name as string | undefined;
+    const newImageUrl = req.body.name as string | undefined;
 
-//     if (newName !== undefined && typeof newName !== "string") {
-//       res.status(400);
-//       throw new Error("'name' tem que ser string");
-//     }
+    if (newName !== undefined && typeof newName !== "string") {
+      res.status(400);
+      throw new Error("'name'deve ser string");
+    }
 
-//     if (newPrice !== undefined && typeof newPrice !== "number") {
-//       res.status(400);
-//       throw new Error("'price' tem que ser number");
-//     }
+    if (newPrice !== undefined) {
+      if (typeof newPrice !== "number") {
+        res.status(400);
+        throw new Error("'price' deve ser number");
+      }
 
-//     if (
-//       newCategory !== undefined &&
-//       newCategory !== PRODUCT_CATEGORY.CATEGORY1 &&
-//       newCategory !== PRODUCT_CATEGORY.CATEGORY2 &&
-//       newCategory !== PRODUCT_CATEGORY.CATEGORY3
-//     ) {
-//       res.status(400);
-//       throw new Error("'category' precisa ter um dos valores válidos");
-//     }
+      if (newPrice < 0) {
+        res.status(400);
+        throw new Error("'price' deve ser maior ou igual a zero");
+      }
+    }
 
-//     productToEdid.name = newName || productToEdid.name;
-//     productToEdid.price = isNaN(newPrice) ? productToEdid.price : newPrice;
-//     productToEdid.category = newCategory || productToEdid.category;
+    if (newDescription !== undefined && typeof newDescription !== "string") {
+      res.status(400);
+      throw new Error("'description' deve ser string");
+    }
 
-//     res.status(200).send("Produto atualizado com sucesso");
-//   } catch (error) {
-//     if (res.statusCode === 200) {
-//       res.status(500);
-//     }
+    if (newImageUrl !== undefined && typeof newImageUrl !== "string") {
+      res.status(400);
+      throw new Error("'imageUrl' deve ser string");
+    }
 
-//     if (error instanceof Error) {
-//       res.send(error.message);
-//     } else {
-//       res.send("Erro inesperado");
-//     }
-//   }
-// };
+    const updateProduct: TProduct = {
+      id: productToEdid.id,
+      name: newName || productToEdid.name,
+      price: isNaN(newPrice) ? productToEdid.price : newPrice,
+      description: newDescription || productToEdid.description,
+      image_url: newImageUrl || productToEdid.image_url,
+    };
+
+    await db("products").update(updateProduct).where({ id: idToEdit });
+
+    res.status(200).send({ message: "Produto atualizado com sucesso" });
+  } catch (error) {
+    if (res.statusCode === 200) {
+      res.status(500);
+    }
+
+    if (error instanceof Error) {
+      res.send(error.message);
+    } else {
+      res.send("Erro inesperado");
+    }
+  }
+};

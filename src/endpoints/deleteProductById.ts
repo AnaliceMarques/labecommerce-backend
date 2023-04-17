@@ -1,31 +1,37 @@
-// import { Request, Response } from "express";
-// import { products } from "../database";
+import { Request, Response } from "express";
+import { db } from "../database/knex";
 
-// export const deleteProductById = (req: Request, res: Response) => {
-//   try {
-//     const id = req.params.id;
+export const deleteProductById = async (req: Request, res: Response) => {
+  try {
+    const idToDelete = req.params.id;
 
-//     const indexProductToDelete = products.findIndex(
-//       (product) => product.id === id
-//     );
+    const [productIdExist] = await db("products").where({ id: idToDelete });
 
-//     if (indexProductToDelete < 0) {
-//       res.status(404);
-//       throw new Error("Produto não cadastrado");
-//     }
+    if (!productIdExist) {
+      res.status(404);
+      throw new Error("'id' não cadastrado");
+    }
 
-//     products.splice(indexProductToDelete, 1);
+    const [productInPurchasesProducts] = await db("purchases_products").where({
+      product_id: idToDelete,
+    });
 
-//     res.status(200).send("Produto apagado com sucesso");
-//   } catch (error) {
-//     if (res.statusCode === 200) {
-//       res.status(500);
-//     }
+    if (productInPurchasesProducts) {
+      await db("purchases_products").del().where({ product_id: idToDelete });
+    }
 
-//     if (error instanceof Error) {
-//       res.send(error.message);
-//     } else {
-//       res.send("Erro inesperado");
-//     }
-//   }
-// };
+    await db("products").del().where({ id: idToDelete });
+
+    res.status(200).send({ message: "Produto excluído com sucesso" });
+  } catch (error) {
+    if (res.statusCode === 200) {
+      res.status(500);
+    }
+
+    if (error instanceof Error) {
+      res.send(error.message);
+    } else {
+      res.send("Erro inesperado");
+    }
+  }
+};

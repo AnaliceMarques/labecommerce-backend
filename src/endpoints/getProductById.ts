@@ -5,17 +5,22 @@ export const getProductById = async (req: Request, res: Response) => {
   try {
     const id = req.params.id;
 
-    const [productFound] = await db.raw(`
-    SELECT * FROM products
-    WHERE id="${id}";
-    `);
+    const [productExist] = await db("products").where({ id: id });
 
-    if (!productFound) {
+    if (!productExist) {
       res.status(404);
-      throw new Error("Produto não encontrado");
+      throw new Error("'id' não cadastrado");
     }
 
-    res.status(200).send({ mensage: "Produto encontrado", productFound });
+    const result = {
+      id: productExist.id,
+      name: productExist.name,
+      price: productExist.price,
+      description: productExist.description,
+      imageUrl: productExist.image_url,
+    };
+
+    res.status(200).send(result);
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);

@@ -1,44 +1,65 @@
-// import { Request, Response } from "express";
-// import { users } from "../database";
-// import { TUser } from "../types";
+import { Request, Response } from "express";
+import { db } from "../database/knex";
+import { TUser } from "../types";
 
-// export const editUserById = (req: Request, res: Response) => {
-//   try {
-//     const id = req.params.id;
+export const editUserById = async (req: Request, res: Response) => {
+  try {
+    const idToEdit = req.params.id;
 
-//     const userToEdid: TUser = users.find((user) => user.id === id);
+    const [userToEdid] = await db("users").where({ id: idToEdit });
 
-//     if (!userToEdid) {
-//       res.status(404);
-//       throw new Error("Usuário não cadastrado");
-//     }
+    if (!userToEdid) {
+      res.status(404);
+      throw new Error("'id' não cadastrado");
+    }
 
-//     const newEmail = req.body.email as string | undefined;
-//     const newPassword = req.body.password as string | undefined;
+    const newName = req.body.name as string | undefined;
+    const newEmail = req.body.email as string | undefined;
+    const newPassword = req.body.password as string | undefined;
 
-//     if (newEmail !== undefined && typeof newEmail !== "string") {
-//       res.status(400);
-//       throw new Error("'email' tem que ser string");
-//     }
+    if (newName !== undefined && typeof newName !== "string") {
+      res.status(400);
+      throw new Error("'name'deve ser string");
+    }
 
-//     if (newPassword !== undefined && typeof newPassword !== "string") {
-//       res.status(400);
-//       throw new Error("'password' tem que ser string");
-//     }
+    if (newEmail !== undefined) {
+      if (typeof newEmail !== "string") {
+        res.status(400);
+        throw new Error("'email' deve ser string");
+      }
 
-//     userToEdid.email = newEmail || userToEdid.email;
-//     userToEdid.password = newPassword || userToEdid.password;
+      const [userEmailExist] = await db("users").where({ email: newEmail });
 
-//     res.status(200).send("Cadastro atualizado com sucesso");
-//   } catch (error) {
-//     if (res.statusCode === 200) {
-//       res.status(200);
-//     }
+      if (userEmailExist) {
+        res.status(409);
+        throw new Error("'email' já cadastrado, digite outro valor");
+      }
+    }
 
-//     if (error instanceof Error) {
-//       res.send(error.message);
-//     } else {
-//       res.send("Erro inesperado");
-//     }
-//   }
-// };
+    if (newPassword !== undefined && typeof newPassword !== "string") {
+      res.status(400);
+      throw new Error("'password' deve ser string");
+    }
+
+    const updateUser: TUser = {
+      id: userToEdid.id,
+      name: newName || userToEdid.name,
+      email: newEmail || userToEdid.email,
+      password: newPassword || userToEdid.password,
+    };
+
+    await db("users").update(updateUser).where({ id: idToEdit });
+
+    res.status(200).send({ message: "Usuário atualizado com sucesso" });
+  } catch (error) {
+    if (res.statusCode === 200) {
+      res.status(200);
+    }
+
+    if (error instanceof Error) {
+      res.send(error.message);
+    } else {
+      res.send("Erro inesperado");
+    }
+  }
+};

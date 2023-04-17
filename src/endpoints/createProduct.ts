@@ -4,11 +4,23 @@ import { TProduct } from "../types";
 
 export const createProduct = async (req: Request, res: Response) => {
   try {
-    const { id, name, price, description, image_url } = req.body;
+    const { id, name, price, description, imageUrl } = req.body;
 
     if (!id.length) {
       res.status(400);
       throw new Error("'id' não deve estar vazio");
+    }
+
+    if (typeof id !== "string") {
+      res.status(400);
+      throw new Error("'id' deve ser string");
+    }
+
+    const [productIdExist] = await db("products").where({ id: id });
+
+    if (productIdExist) {
+      res.status(409);
+      throw new Error("'id' já cadastrado, digite outro valor");
     }
 
     if (!name.length) {
@@ -16,61 +28,42 @@ export const createProduct = async (req: Request, res: Response) => {
       throw new Error("'name' não deve estar vazio");
     }
 
-    if (price < 0) {
-      res.status(400);
-      throw new Error("'price' não deve ser negativo");
-    }
-
-    if (typeof id !== "string") {
-      res.status(400);
-      throw new Error("'id' tem que ser string");
-    }
-
     if (typeof name !== "string") {
       res.status(400);
-      throw new Error("'name' tem que ser string");
+      throw new Error("'name' deve ser string");
     }
 
     if (typeof price !== "number") {
       res.status(400);
-      throw new Error("'price' tem que ser number");
+      throw new Error("'price' deve ser number");
+    }
+
+    if (price < 0) {
+      res.status(400);
+      throw new Error("'price' deve ser maior ou igual a zero");
     }
 
     if (typeof description !== "string") {
       res.status(400);
-      throw new Error("'description' tem que ser string");
+      throw new Error("'description' deve ser string");
     }
 
-    if (typeof image_url !== "string") {
+    if (typeof imageUrl !== "string") {
       res.status(400);
-      throw new Error("'image_url' tem que ser string");
-    }
-
-    const [productIdFound] = await db.raw(`
-    SELECT * FROM products
-    WHERE id = "${id}";
-    `);
-
-    if (productIdFound) {
-      res.status(409);
-      throw new Error("'id' já cadastrado");
+      throw new Error("'imageUrl' deve ser string");
     }
 
     const newProduct: TProduct = {
       id,
       name,
       price,
-      description,
-      image_url,
+      description: description === "" ? null : description,
+      image_url: imageUrl === "" ? null : imageUrl,
     };
 
-    await db.raw(`
-   INSERT INTO products (id, name, price, description, image_url)
-    VALUES
-    ("${newProduct.id}","${newProduct.name}", ${newProduct.price}, "${newProduct.description}", "${newProduct.image_url}");
-   `);
+    await db("products").insert(newProduct);
 
-    res.status(201).send("Produto cadastrado com sucesso");
+    res.status(201).send({ message: "Produto cadastrado com sucesso" });
   } catch (error) {
     if (res.statusCode === 200) {
       res.status(500);
